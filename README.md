@@ -12,6 +12,10 @@ mcp-conform runs a real MCP client against your server — over stdio or Streama
 </p>
 
 <p>
+  <a href="https://jayblast-spec.github.io/mcp-registry"><img alt="MCP Registry" src="https://img.shields.io/endpoint?url=https://jayblast-spec.github.io/mcp-registry/badges/mcp-conform-reference-good-server.json&style=flat-square"></a>
+</p>
+
+<p>
   <img alt="Python" src="https://img.shields.io/badge/Python%203.10+-3776AB?style=flat-square&logo=python&logoColor=white">
   <img alt="MCP" src="https://img.shields.io/badge/Model%20Context%20Protocol-1D4ED8?style=flat-square&logo=anthropic&logoColor=white">
   <img alt="httpx" src="https://img.shields.io/badge/httpx-1D4ED8?style=flat-square&logo=python&logoColor=white">
