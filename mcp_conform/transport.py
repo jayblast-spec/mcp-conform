@@ -40,10 +40,11 @@ def _split_command(raw: str) -> list[str]:
 class Target:
     raw: str
     is_http: bool
+    cwd: str | None = None
 
     @classmethod
-    def parse(cls, raw: str) -> "Target":
-        return cls(raw=raw, is_http=raw.startswith("http://") or raw.startswith("https://"))
+    def parse(cls, raw: str, cwd: str | None = None) -> "Target":
+        return cls(raw=raw, is_http=raw.startswith("http://") or raw.startswith("https://"), cwd=cwd)
 
 
 @asynccontextmanager
@@ -58,7 +59,7 @@ async def connect(target: Target):
                 yield session, init
     else:
         parts = _split_command(target.raw)
-        params = StdioServerParameters(command=parts[0], args=parts[1:])
+        params = StdioServerParameters(command=parts[0], args=parts[1:], cwd=target.cwd)
         async with stdio_client(params) as (read, write):
             async with ClientSession(read, write) as session:
                 init = await session.initialize()

@@ -22,9 +22,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("target", help='An http(s) URL, or a quoted stdio launch command, e.g. "python server.py"')
     parser.add_argument("--json", action="store_true", help="Output machine-readable JSON instead of text.")
+    parser.add_argument("--cwd", default=None, help="Working directory to launch a stdio target from (ignored for http(s) targets).")
     args = parser.parse_args(argv)
 
-    report = asyncio.run(run(args.target))
+    report = asyncio.run(run(args.target, cwd=args.cwd))
 
     print(report.to_json() if args.json else report.to_text())
     return report.exit_code

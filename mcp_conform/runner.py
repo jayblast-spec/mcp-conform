@@ -7,8 +7,10 @@ from .report import CheckResult, Report, Status
 from .transport import Target, connect
 
 
-async def run(target_str: str) -> Report:
-    target = Target.parse(target_str)
+async def run(target_str: str, cwd: str | None = None) -> Report:
+    """cwd: working directory for a stdio launch command (e.g. a freshly
+    cloned repo) — ignored for http(s) targets."""
+    target = Target.parse(target_str, cwd=cwd)
     report = Report(target=target_str)
 
     try:
