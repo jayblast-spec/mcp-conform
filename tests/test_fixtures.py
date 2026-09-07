@@ -54,6 +54,22 @@ async def test_broken_server_resources_capability_mismatch_is_caught():
 
 
 @pytest.mark.anyio
+async def test_broken_server_resource_templates_crash_is_caught():
+    target = f'{PYTHON} "{FIXTURES / "broken_server.py"}"'
+    report = await run(target)
+    by_id = {r.check_id: r for r in report.results}
+    assert by_id["resources.templates_no_crash"].status == Status.FAIL
+
+
+@pytest.mark.anyio
+async def test_good_server_pagination_check_skips_when_no_cursor():
+    target = f'{PYTHON} "{FIXTURES / "good_server.py"}"'
+    report = await run(target)
+    by_id = {r.check_id: r for r in report.results}
+    assert by_id["tools.pagination_consistency"].status == Status.SKIP
+
+
+@pytest.mark.anyio
 async def test_broken_server_exit_code_is_nonzero():
     target = f'{PYTHON} "{FIXTURES / "broken_server.py"}"'
     report = await run(target)

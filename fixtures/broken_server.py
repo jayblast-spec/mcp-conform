@@ -10,6 +10,7 @@ Violations planted on purpose:
 1. call_tool always "succeeds" (isError never set), even for an unknown tool
    name or missing required arguments.
 2. Declares a resources capability, but resources/list raises.
+3. resources/templates/list also raises.
 """
 
 import mcp.types as types
@@ -44,6 +45,11 @@ async def call_tool(name: str, arguments: dict) -> list[types.ContentBlock]:
 @server.list_resources()
 async def list_resources() -> list[types.Resource]:
     raise RuntimeError("intentionally broken: resources capability declared but list_resources crashes")
+
+
+@server.list_resource_templates()
+async def list_resource_templates() -> list[types.ResourceTemplate]:
+    raise RuntimeError("intentionally broken: resources/templates/list crashes too")
 
 
 async def _run() -> None:

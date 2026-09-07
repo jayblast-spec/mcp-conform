@@ -18,6 +18,7 @@ PROTOCOL_VERSION_SPEC = "https://modelcontextprotocol.io/specification/2025-11-2
 TOOLS_SPEC = "https://modelcontextprotocol.io/specification/2025-11-25/server/tools"
 RESOURCES_SPEC = "https://modelcontextprotocol.io/specification/2025-11-25/server/resources"
 PROMPTS_SPEC = "https://modelcontextprotocol.io/specification/2025-11-25/server/prompts"
+PAGINATION_SPEC = "https://modelcontextprotocol.io/specification/2025-11-25/server/utilities/pagination"
 
 
 async def check_initialize_result(session, init: InitializeResult) -> CheckResult:
@@ -220,6 +221,66 @@ async def check_prompts_capability_consistency(session, init: InitializeResult) 
     )
 
 
+async def check_resource_templates_no_crash(session, init: InitializeResult) -> CheckResult:
+    """resources/templates/list is a sub-operation of the resources
+    capability (there's no separate capability flag for it) — a server that
+    declares resources must not crash when a client asks for templates, even
+    if it simply has none to offer.
+    """
+    if not (init.capabilities and init.capabilities.resources is not None):
+        return CheckResult(
+            "resources.templates_no_crash", "resource templates listing doesn't crash",
+            Status.SKIP, "No resources capability.", RESOURCES_SPEC,
+        )
+    try:
+        result = await session.list_resource_templates()
+    except Exception as exc:  # noqa: BLE001
+        return CheckResult(
+            "resources.templates_no_crash", "resource templates listing doesn't crash",
+            Status.FAIL, f"resources/templates/list raised: {exc}", RESOURCES_SPEC,
+        )
+    return CheckResult(
+        "resources.templates_no_crash", "resource templates listing doesn't crash",
+        Status.PASS, f"{len(result.resourceTemplates)} template(s) (zero is fine).", RESOURCES_SPEC,
+    )
+
+
+async def check_pagination_cursor_consistency(session, init: InitializeResult) -> CheckResult:
+    """If tools/list's first page returns a nextCursor, following it must not
+    crash and must not just hand back an identical cursor forever (a naive
+    "infinite same page" bug). Most small servers won't paginate at all —
+    that's a legitimate SKIP, not a failure.
+    """
+    if not (init.capabilities and init.capabilities.tools is not None):
+        return CheckResult(
+            "tools.pagination_consistency", "a tools/list cursor, if present, is followable",
+            Status.SKIP, "No tools capability.", PAGINATION_SPEC,
+        )
+    first_page = await session.list_tools()
+    if not first_page.nextCursor:
+        return CheckResult(
+            "tools.pagination_consistency", "a tools/list cursor, if present, is followable",
+            Status.SKIP, "Server does not paginate tools/list (no nextCursor) — nothing to test.", PAGINATION_SPEC,
+        )
+    try:
+        second_page = await session.list_tools(cursor=first_page.nextCursor)
+    except Exception as exc:  # noqa: BLE001
+        return CheckResult(
+            "tools.pagination_consistency", "a tools/list cursor, if present, is followable",
+            Status.FAIL, f"Following nextCursor raised: {exc}", PAGINATION_SPEC,
+        )
+    if second_page.nextCursor == first_page.nextCursor:
+        return CheckResult(
+            "tools.pagination_consistency", "a tools/list cursor, if present, is followable",
+            Status.FAIL, "Following nextCursor returned the identical nextCursor back — likely an infinite-page bug.",
+            PAGINATION_SPEC,
+        )
+    return CheckResult(
+        "tools.pagination_consistency", "a tools/list cursor, if present, is followable",
+        Status.PASS, f"Second page fetched successfully ({len(second_page.tools)} tool(s)).", PAGINATION_SPEC,
+    )
+
+
 # Checks that need a session + init result (run for every target).
 SESSION_CHECKS = [
     check_initialize_result,
@@ -228,5 +289,7 @@ SESSION_CHECKS = [
     check_tool_call_invalid_name,
     check_tool_call_missing_required_args,
     check_resources_capability_consistency,
+    check_resource_templates_no_crash,
+    check_pagination_cursor_consistency,
     check_prompts_capability_consistency,
 ]

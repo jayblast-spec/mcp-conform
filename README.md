@@ -33,7 +33,7 @@ MCP just became the wire protocol every major agent platform is racing to standa
 ## How It Works
 
 - `mcp_conform/transport.py` connects to a target two ways: a real `mcp.ClientSession` (stdio subprocess or Streamable HTTP) for protocol-correct checks, and raw `httpx` JSON-RPC posts for checks that need to send input the official SDK would refuse to construct.
-- `mcp_conform/checks.py` runs the protocol-level checks against every target: `initialize` shape, capability-vs-behavior consistency for tools/resources/prompts, and graceful failure on an unknown tool name or missing required arguments.
+- `mcp_conform/checks.py` runs the protocol-level checks against every target: `initialize` shape, capability-vs-behavior consistency for tools/resources/resource-templates/prompts, graceful failure on an unknown tool name or missing required arguments, and pagination-cursor consistency for `tools/list`.
 - `mcp_conform/http_checks.py` runs HTTP-only checks: unknown methods, malformed JSON bodies, missing `jsonrpc` fields, and non-conforming `Accept` headers — all against the raw transport, on purpose.
 - `mcp_conform/report.py` scores results as `PASS`/`FAIL`/`WARN`/`SKIP`/`ERROR` and renders text or JSON; exit code is non-zero only on a real `FAIL` or `ERROR`.
 - `fixtures/good_server.py` and `fixtures/broken_server.py` are the positive and negative controls; `tests/test_fixtures.py` asserts zero FAILs against the first and all three planted violations caught in the second — this is what actually proves the tool works, not a formality.
