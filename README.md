@@ -76,6 +76,12 @@ pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
+## Get a written conformance report
+
+Run it yourself for free with the commands above. If you would rather have it done and written up — every FAIL/WARN explained with a suggested fix, plus an optional live badge in the [public registry](https://jayblast-spec.github.io/mcp-registry/) — there is a fixed-price **MCP Conformance Report (48h, $79)**: https://veroputech.gumroad.com/l/mcp-conformance-report-48h
+
+The CLI, the registry and the copyright are also for sale together as the [MCP Conform Suite](https://veroputech.gumroad.com/l/mcp-conform-suite).
+
 ## License
 
 Apache 2.0 — see [LICENSE](./LICENSE).
